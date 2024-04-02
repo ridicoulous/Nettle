@@ -9,6 +9,7 @@ namespace Nettle
 {
     internal class Program
     {
+        static Options Options = new Options();
         static ProjectionInfo wsg = KnownCoordinateSystems.Geographic.World.WGS1984;
         static ProjectionInfo sourceProjection;
         static string tablequery = @"CREATE TABLE IF NOT EXISTS Data (
@@ -22,6 +23,7 @@ namespace Nettle
         {
             try
             {
+                var opts = Options ?? new Options("42.csv", 5565, "result.sqlite", true, ";");
                 Parser.Default.ParseArguments<Options>(args)
                       .WithParsed<Options>(opts => RunOptionsAndReturnExitCode(opts))
                       .WithNotParsed<Options>((errs) => HandleParseError(errs));
@@ -34,11 +36,11 @@ namespace Nettle
 
         static void RunOptionsAndReturnExitCode(Options opts)
         {
-            sourceProjection = ProjectionInfo.FromEpsgCode(opts.EspgId);
-            Console.WriteLine($"Try to read {opts.InputFile}");
+            sourceProjection = ProjectionInfo.FromEpsgCode(opts.Espg);
+            Console.WriteLine($"Try to read {opts.File}");
             var records = ReadCsvFile(opts);
             Console.WriteLine($"Projecting coordinates from readed file");
-            InsertDataIntoDatabase(records, opts.SqliteDbOutputPath);
+            InsertDataIntoDatabase(records, opts.Output);
         }
 
         static IEnumerable<CsvRecord> ReadCsvFile(Options opts)
@@ -47,7 +49,7 @@ namespace Nettle
             {
                 Delimiter = opts.Delimeter
             };
-            using (var reader = new StreamReader(opts.InputFile))
+            using (var reader = new StreamReader(opts.File))
             using (var csv = new CsvReader(reader, config))
             {
                 csv.Context.RegisterClassMap<CsvRecordMap>();
@@ -60,12 +62,12 @@ namespace Nettle
                         return double.Parse(sanitizedPart);
                     }).ToArray();
                     record.LatLon = coords;
-                    if (opts.ShouldSwapXandY)
+                    if (opts.Swap)
                         Array.Reverse(record.LatLon);
 
-                    Console.Write($"EPSG:{opts.EspgId} [{record.LatLon[0]},{record.LatLon[1]}] => WSG84 ");
+                    Console.Write($"EPSG:{opts.Espg} [{record.LatLon[0]},{record.LatLon[1]}] => WSG84 ");
                     Reproject.ReprojectPoints(record.LatLon, null, sourceProjection, wsg, 0, 1);
-                    
+
                     Console.WriteLine($"[{record.LatLon[0]},{record.LatLon[1]}]");
                     return record;
                 }).ToList();
