@@ -17,7 +17,7 @@ namespace Nettle
             Delimeter = delimeter ?? throw new ArgumentNullException(nameof(delimeter));
         }
 
-        [Option('f', "file", Required = false, HelpText = "Input csv [#,time,description,coords] file to be processed.", Default ="nettle.csv")]
+        [Option('f', "file", Required = false, HelpText = "Input csv [name,time,description,coords] file to be processed.", Default ="nettle.csv")]
         public string File { get; private set; }
 
         [Option('e', "epsg", Default = 5565, Required = false,  HelpText = "Id of SRID to convert from. Default: https://epsg.io/5565")]

@@ -24,6 +24,8 @@ namespace Nettle
             try
             {
                 var opts = Options ?? new Options("42.csv", 5565, "result.sqlite", true, ";");
+             
+
                 Parser.Default.ParseArguments<Options>(args)
                       .WithParsed<Options>(opts => RunOptionsAndReturnExitCode(opts))
                       .WithNotParsed<Options>((errs) => HandleParseError(errs));

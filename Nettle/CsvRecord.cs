@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ namespace Nettle
 
     public class CsvRecordMap : CsvHelper.Configuration.ClassMap<CsvRecord>
     {
+        [RequiresUnreferencedCode("CsvHelper is not trim compatible")]
         public CsvRecordMap()
         {
             Map(m => m.Name).Name("name");
